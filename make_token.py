@@ -108,6 +108,12 @@ def parse_cert(cert_file: str, password: str) -> Tuple[list[str], str, Optional[
             crypto.dump_certificate(crypto.FILETYPE_PEM, cert).decode('utf-8'))
         certs = [cert_str]
 
+        cacerts = p12.get_ca_certificates();
+        for cacert in cacerts:
+            cacert = normalize_cert(
+                crypto.dump_certificate(crypto.FILETYPE_PEM, cacert).decode('utf-8'))
+            certs.append(cacert)
+
         priv_key = p12.get_privatekey()
         priv_key_str = normalize_privkey(
             crypto.dump_privatekey(
