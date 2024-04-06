@@ -120,13 +120,14 @@ def create_assertion(
         cert_path: str,
         password: str,
         target_id: str,
+        client_id: str | None,
 ) -> Tuple[str, str]:
     certs, priv_key, serial_nr = parse_cert(cert_path, password)
     if not serial_nr:
         raise RuntimeError("error parse_cert")
 
     assertion = make_client_assertion(
-        clientID=serial_nr,
+        clientID=client_id if client_id else serial_nr,
         targetID=target_id,
         certs=certs,
         priv_key=priv_key,
@@ -150,6 +151,10 @@ def main():
         "-p", "--password",
         help="Certificate password",
         required=False)
+    parser.add_argument(
+        "-i", "--client_id",
+        help="use client id. if omitted serial is used",
+        required=False)
 
     args = parser.parse_args()
 
@@ -160,14 +165,17 @@ def main():
         print('no password')
         return 1
 
-    assertion, _ = create_assertion(
+    assertion, serial_nr = create_assertion(
         cert_path=args.cert,
         password=args.password,
         target_id=args.target_id,
+        client_id=args.client_id,
     )
 
     with open("token.jwt", "w") as f:
         f.write(assertion)
+    with open("client_id.txt", "w") as f:
+        f.write(serial_nr)
 
     return 0
 

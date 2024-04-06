@@ -2,6 +2,7 @@ import sys
 from make_token import create_assertion
 import requests
 import urllib.parse
+import json
 import jwt
 
 
@@ -32,6 +33,9 @@ def satellite_auth(
                                 ),
                                 headers=headers,
                                 data=payload)
+
+    print(response.status_code)
+    print("text", response.text)
     response.raise_for_status()
     return response.json()["access_token"]
 
@@ -122,11 +126,14 @@ def main():
         target_id=args.target_id,
     )
 
+    print('client id: ', client_id)
     access_token = satellite_auth(
         satellite_url=args.satellite,
         assertion=assertion,
         client_id=client_id,
     )
+
+    print('here')
 
     if False:
         trusted_list = satellite_get_trusted_list(
@@ -134,16 +141,18 @@ def main():
             access_token=access_token,
         )
 
-        print(trusted_list)
+        print(json.dumps(trusted_list))
 
     else:
+
+        print('there')
         parties = satellite_get_parties(
             satellite_url=args.satellite,
             access_token=access_token,
             party_eori="*",
         )
 
-        print(parties)
+        print(json.dumps(parties))
 
 
 if __name__ == "__main__":
